@@ -35,10 +35,10 @@ class ReadThreadsTest extends TestCase
     /** @test */
     public function a_guest_may_not_reply_to_a_thread()
     {
-        $this->post($this->thread->path().'/replies', [])
+        $this->post($this->thread->path() . '/replies', [])
             ->assertRedirect('/login');
     }
-    
+
     /** @test */
     public function a_user_can_read_replies_of_a_thread()
     {
@@ -49,5 +49,17 @@ class ReadThreadsTest extends TestCase
         $response = $this->get($this->thread->path());
 
         $response->assertSee($reply->body);
+    }
+
+    /** @test */
+    public function a_user_can_filter_threads_according_to_a_channel()
+    {
+        $channel = create('App\Channel');
+        $threadInChannel = create('App\Thread', ['channel_id' => $channel->id]);
+        $threadNotInChannel = create('App\Thread', ['channel_id' => 999]);
+
+        $this->get('/threads/' . $channel->slug)
+            ->assertSee($threadInChannel->title)
+            ->assertDontSee($threadNotInChannel->title);
     }
 }
